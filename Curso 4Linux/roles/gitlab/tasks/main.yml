@@ -1,0 +1,21 @@
+---
+# tasks file for gitlab
+- name: Instalando depedencias
+  apt: name={{ item }} update_cache=yes state=present
+  with_items:
+    - curl
+    - openssh-server
+    - postfix
+    - ca-certificates
+
+
+- name: Baixando o Script de instalacao
+  get_url:
+    url: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh
+    dest: /tmp/script.deb.sh
+
+- name: Executando o script
+  command: bash /tmp/script.deb.sh
+
+- name: Instalando o Gitlab
+  apt: name=gitlab-ee update_cache=yes state=present

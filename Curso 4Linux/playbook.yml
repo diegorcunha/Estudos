@@ -1,0 +1,18 @@
+---
+# Playbook de Exemplo
+- name: Personalizando o arquivo de resolv.conf
+  hosts: all
+  tasks:
+    - name: Atualizando o arquivo
+      copy: src=resolv.conf dest=/etc/resolv.conf
+
+
+- name: Garantir a instalacao de pacotes
+  hosts: devops 
+  tasks:
+    - name: Instalando o pacote sl
+      apt: name=sl update_cache=yes state=present
+
+
+
+

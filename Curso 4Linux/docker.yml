@@ -1,0 +1,8 @@
+---
+
+- name: Executando as rolres na maquina docker
+  hosts: docker
+  roles:
+    - docker
+
+
