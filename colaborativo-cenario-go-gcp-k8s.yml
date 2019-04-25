@@ -1,0 +1,69 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: colaborativocenario-go
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: colaborativocenario-go
+  name: colaborativocenario-go
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: colaborativocenario-go
+    spec:
+      containers:
+        - name: colaborativocenario-go
+          image: gcr.io/pbgcloud/colaborativocenario:$TAG_NAME 
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rdsaccess
+                  key: db_user
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: rdsaccess
+                  key: db_pass
+            - name: DB_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: rdsaccess
+                  key: db_endpoint
+            - name: DB_SCHEMA
+              valueFrom:
+                secretKeyRef:
+                  name: rdsaccess
+                  key: db_schema
+          ports:
+          - containerPort: 80
+            protocol: TCP
+          resources:
+            requests:
+              memory: "256M"
+              cpu: "256m"
+            limits:
+              memory: "512M"
+              cpu: "512m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: colaborativocenario-go
+  labels:
+    app: colaborativocenario-go
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: colaborativocenario-go
+  type: LoadBalancer

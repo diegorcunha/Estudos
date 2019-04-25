@@ -1,0 +1,38 @@
+pipeline {
+    agent any 
+
+    stages {
+        stage('Build') { 
+	    when {
+                branch "master"
+	    }
+            steps { 
+		sh '''#!/bin/sh
+			echo "Building..."
+			sudo gcloud auth configure-docker
+			sudo docker build -t colaborativocenario-go:${BUILD_NUMBER} . 
+			sudo docker tag colaborativocenario-go:${BUILD_NUMBER} "gcr.io/pbgcloud/colaborativocenario-go:${BUILD_NUMBER}"
+			sudo docker push "gcr.io/pbgcloud/colaborativocenario-go:${BUILD_NUMBER}"
+		'''
+            }
+        }
+        stage('Test'){
+            steps {
+		echo "Test"
+            }
+        }
+        stage('Deploy') {
+	    when {
+                branch "master"
+	    }
+            steps {
+		sh '''#!/bin/sh
+                	echo "Deploy"
+			gcloud container clusters get-credentials portobello-cluster-homl-1 --zone us-central1-a --project pbgcloud
+ 			sed -ie 's/$TAG_NAME/'"$BUILD_NUMBER"'/g' colaborativo-cenario-go-gcp-k8s.yml
+                	kubectl apply -f colaborativo-cenario-go-gcp-k8s.yml -n colaborativocenario-go
+		'''
+            }
+        }
+    }
+}

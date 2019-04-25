@@ -1,0 +1,38 @@
+pipeline {
+    agent any 
+
+    stages {
+        stage('Build') { 
+	    when {
+                branch "master"
+	    }
+            steps { 
+		sh '''#!/bin/sh
+			echo "Building..."
+			$(sudo aws ecr get-login --no-include-email --region us-east-1) 
+    			sudo docker build -t colaborativocenario-go:${BUILD_NUMBER} . 
+    			sudo docker tag colaborativocenario-go:${BUILD_NUMBER} 856616393303.dkr.ecr.us-east-1.amazonaws.com/colaborativocenario-go:${BUILD_NUMBER} 
+   			sudo docker push 856616393303.dkr.ecr.us-east-1.amazonaws.com/colaborativocenario-go:${BUILD_NUMBER}
+		'''
+            }
+        }
+        stage('Test'){
+            steps {
+		echo "Test"
+            }
+        }
+        stage('Deploy') {
+	    when {
+                branch "master"
+	    }
+            steps {
+		sh '''#!/bin/sh
+                	echo "Deploy"
+                	export KUBECONFIG=/var/lib/jenkins/.kube/config-hml
+ 			sed -ie 's/$TAG_NAME/'"$BUILD_NUMBER"'/g' colaborativo-cenario-go-k8s.yml
+                	kubectl apply -f colaborativo-cenario-go-k8s.yml -n colaborativocenario-go
+		'''
+            }
+        }
+    }
+}
